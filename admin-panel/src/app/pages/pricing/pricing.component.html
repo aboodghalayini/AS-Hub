@@ -1,0 +1,253 @@
+<div class="pricing-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">{{ 'pricing.title' | translate }}</h1>
+      <p class="page-subtitle">{{ 'pricing.subtitle' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="refreshData()">
+        <span class="icon">🔄</span>
+        {{ 'common.refresh' | translate }}
+      </button>
+      <button class="btn btn-primary" (click)="openAddModal()">
+        <span class="icon">➕</span>
+        {{ 'pricing.add' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Language Filter -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>{{ 'common.language' | translate }}:</label>
+      <div class="btn-group">
+        <button 
+          class="btn btn-sm" 
+          [class.active]="selectedLanguage === 'en'"
+          (click)="filterByLanguage('en')">
+          🇬🇧 English
+        </button>
+        <button 
+          class="btn btn-sm" 
+          [class.active]="selectedLanguage === 'ar'"
+          (click)="filterByLanguage('ar')">
+          🇸🇦 العربية
+        </button>
+        <button 
+          class="btn btn-sm" 
+          [class.active]="selectedLanguage === 'all'"
+          (click)="filterByLanguage('all')">
+          {{ 'common.all' | translate }}
+        </button>
+      </div>
+    </div>
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+        [placeholder]="'common.search' | translate"
+        class="form-control">
+      <span class="search-icon">🔍</span>
+    </div>
+  </div>
+
+  <!-- Pricing Cards Grid -->
+  <div class="pricing-grid" *ngIf="!loading && filteredPlans.length > 0">
+    <div class="pricing-card" *ngFor="let plan of filteredPlans" [class.popular]="plan.is_popular">
+      <!-- Popular Badge -->
+      <div class="popular-badge" *ngIf="plan.is_popular">
+        <span>⭐ {{ 'pricing.popular' | translate }}</span>
+      </div>
+
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="plan-info">
+          <h3 class="plan-name">{{ plan.name }}</h3>
+          <p class="plan-description">{{ plan.description }}</p>
+        </div>
+        <div class="language-badge" [class]="plan.language">
+          {{ plan.language === 'en' ? '🇬🇧' : '🇸🇦' }}
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="pricing-section">
+        <div class="price-display">
+          <div class="price monthly">
+            <span class="currency">$</span>
+            <span class="amount">{{ plan.price_monthly }}</span>
+            <span class="period">/{{ 'pricing.month' | translate }}</span>
+          </div>
+          <div class="price-divider">{{ 'common.or' | translate }}</div>
+          <div class="price yearly">
+            <span class="currency">$</span>
+            <span class="amount">{{ plan.price_yearly }}</span>
+            <span class="period">/{{ 'pricing.year' | translate }}</span>
+          </div>
+        </div>
+        <div class="savings" *ngIf="calculateSavings(plan) > 0">
+          💰 {{ 'pricing.save' | translate }} ${{ calculateSavings(plan) }}/{{ 'pricing.year' | translate }}
+        </div>
+      </div>
+
+      <!-- Features List -->
+      <div class="features-section">
+        <h4>{{ 'pricing.features' | translate }}</h4>
+        <ul class="features-list">
+          <li *ngFor="let feature of plan.features" class="feature-item">
+            <span class="check-icon">✓</span>
+            <span>{{ feature }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Card Footer -->
+      <div class="card-footer">
+        <div class="status-badge" [class.active]="plan.is_active">
+          <span class="status-dot"></span>
+          {{ plan.is_active ? ('common.active' | translate) : ('common.inactive' | translate) }}
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-icon" (click)="toggleStatus(plan)" [title]="'common.toggleStatus' | translate">
+            {{ plan.is_active ? '👁️' : '🚫' }}
+          </button>
+          <button class="btn btn-icon" (click)="editPlan(plan)" [title]="'common.edit' | translate">
+            ✏️
+          </button>
+          <button class="btn btn-icon btn-danger" (click)="deletePlan(plan)" [title]="'common.delete' | translate">
+            🗑️
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredPlans.length === 0">
+    <span class="empty-icon">💰</span>
+    <h3>{{ 'pricing.noPricing' | translate }}</h3>
+    <p>{{ 'pricing.noPricingDesc' | translate }}</p>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <span class="icon">➕</span>
+      {{ 'pricing.add' | translate }}
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>{{ 'common.loading' | translate }}</p>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? ('pricing.edit' | translate) : ('pricing.add' | translate) }}</h2>
+      <button class="btn-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="planForm" (ngSubmit)="savePlan()">
+        <!-- Language Selection -->
+        <div class="form-group">
+          <label>{{ 'common.language' | translate }} *</label>
+          <select formControlName="language" class="form-control">
+            <option value="en">🇬🇧 English</option>
+            <option value="ar">🇸🇦 العربية</option>
+          </select>
+        </div>
+
+        <!-- Plan Name -->
+        <div class="form-group">
+          <label>{{ 'pricing.name' | translate }} *</label>
+          <input type="text" formControlName="name" class="form-control" 
+                 [placeholder]="'pricing.namePlaceholder' | translate">
+          <div class="error-message" *ngIf="planForm.get('name')?.invalid && planForm.get('name')?.touched">
+            {{ 'common.required' | translate }}
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label>{{ 'pricing.description' | translate }}</label>
+          <textarea formControlName="description" class="form-control" rows="3"
+                    [placeholder]="'pricing.descriptionPlaceholder' | translate"></textarea>
+        </div>
+
+        <!-- Pricing -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ 'pricing.priceMonthly' | translate }} *</label>
+            <div class="input-group">
+              <span class="input-prefix">$</span>
+              <input type="number" formControlName="price_monthly" class="form-control" 
+                     placeholder="20.00" step="0.01" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ 'pricing.priceYearly' | translate }} *</label>
+            <div class="input-group">
+              <span class="input-prefix">$</span>
+              <input type="number" formControlName="price_yearly" class="form-control" 
+                     placeholder="200.00" step="0.01" min="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Features -->
+        <div class="form-group">
+          <label>{{ 'pricing.features' | translate }} *</label>
+          <div class="features-input">
+            <div class="feature-item-input" *ngFor="let feature of features.controls; let i = index">
+              <input type="text" [formControl]="$any(feature)" class="form-control" 
+                     [placeholder]="'pricing.featurePlaceholder' | translate">
+              <button type="button" class="btn btn-icon btn-danger" (click)="removeFeature(i)">
+                🗑️
+              </button>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="addFeature()">
+              ➕ {{ 'pricing.addFeature' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="is_popular">
+              <span>⭐ {{ 'pricing.markPopular' | translate }}</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="is_active">
+              <span>👁️ {{ 'pricing.markActive' | translate }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Order -->
+        <div class="form-group">
+          <label>{{ 'pricing.order' | translate }}</label>
+          <input type="number" formControlName="order" class="form-control" 
+                 placeholder="0" min="0">
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="planForm.invalid || saving">
+            <span *ngIf="!saving">{{ 'common.save' | translate }}</span>
+            <span *ngIf="saving">{{ 'common.saving' | translate }}...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

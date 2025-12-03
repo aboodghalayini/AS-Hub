@@ -1,0 +1,202 @@
+// Import from pricing styles (same design)
+@import '../pricing/pricing.component.scss';
+
+// Services specific overrides
+.services-container {
+  animation: fadeIn 0.5s ease;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.service-card {
+  background: $white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 2px solid $border-color;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    border-color: $secondary-color;
+  }
+
+  .card-header {
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid $border-color;
+    background: linear-gradient(135deg, rgba($primary-color, 0.03), rgba($secondary-color, 0.03));
+
+    .service-icon {
+      font-size: 3rem;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: $white;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .language-badge {
+      font-size: 1.5rem;
+      padding: 0.5rem;
+      background: $light-color;
+      border-radius: 8px;
+
+      &.en {
+        background: rgba(59, 130, 246, 0.1);
+      }
+
+      &.ar {
+        background: rgba(16, 185, 129, 0.1);
+      }
+    }
+  }
+
+  .card-body {
+    padding: 2rem;
+
+    .service-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: $dark-color;
+      margin: 0 0 1rem 0;
+    }
+
+    .service-description {
+      font-size: 0.9375rem;
+      color: $text-light;
+      line-height: 1.6;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .features-section {
+      h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: $dark-color;
+        margin: 0 0 1rem 0;
+      }
+
+      .features-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        .feature-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          padding: 0.75rem 0;
+          font-size: 0.875rem;
+          color: $dark-color;
+          border-bottom: 1px solid $light-color;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .check-icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            background: $success-color;
+            color: $white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+          }
+        }
+      }
+    }
+  }
+
+  .card-footer {
+    padding: 1.5rem 2rem;
+    background: $light-color;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      background: rgba($text-light, 0.1);
+      color: $text-light;
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: $text-light;
+      }
+
+      &.active {
+        background: rgba($success-color, 0.1);
+        color: $success-color;
+
+        .status-dot {
+          background: $success-color;
+        }
+      }
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+
+      .btn-icon {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: scale(1.1);
+        }
+
+        &.btn-danger:hover {
+          background: $danger-color;
+          color: $white;
+        }
+      }
+    }
+  }
+}
+
+.form-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: $text-light;
+  margin-top: 0.25rem;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+}

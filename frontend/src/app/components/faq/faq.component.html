@@ -1,0 +1,67 @@
+<section id="faq" class="faq-section">
+  <div class="container">
+    <!-- Section Header -->
+    <div class="section-header" data-aos="fade-up">
+      <h2 class="section-title">{{ 'faq.title' | translate }}</h2>
+      <p class="section-subtitle">{{ 'faq.subtitle' | translate }}</p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Category Filter -->
+    <div *ngIf="!loading && categories.length > 1" class="category-filter" data-aos="fade-up" data-aos-delay="100">
+      <button 
+        *ngFor="let category of categories"
+        [class.active]="selectedCategory === category"
+        (click)="filterByCategory(category)"
+        class="category-btn"
+      >
+        {{ 'faq.categories.' + category | translate }}
+      </button>
+    </div>
+
+    <!-- FAQ Accordion -->
+    <div *ngIf="!loading" class="faq-accordion" data-aos="fade-up" data-aos-delay="200">
+      <div 
+        *ngFor="let faq of filteredFaqs; let i = index" 
+        class="faq-item"
+        [class.active]="faq.isOpen"
+      >
+        <button 
+          class="faq-question" 
+          (click)="toggleFaq(faq)"
+          [attr.aria-expanded]="faq.isOpen"
+        >
+          <span class="question-text">{{ faq.question | translate }}</span>
+          <span class="toggle-icon">
+            <i [class]="faq.isOpen ? 'bi bi-dash-circle' : 'bi bi-plus-circle'"></i>
+          </span>
+        </button>
+        
+        <div class="faq-answer" [class.show]="faq.isOpen">
+          <div class="answer-content">
+            <p>{{ faq.answer | translate }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Still Have Questions CTA -->
+    <div class="faq-cta" data-aos="fade-up" data-aos-delay="400">
+      <div class="cta-content">
+        <i class="bi bi-question-circle-fill"></i>
+        <h3>{{ 'faq.stillHaveQuestions' | translate }}</h3>
+        <p>{{ 'faq.contactUs' | translate }}</p>
+        <a href="#contact" class="btn btn-primary btn-lg">
+          {{ 'faq.getInTouch' | translate }}
+          <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

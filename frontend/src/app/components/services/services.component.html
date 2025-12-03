@@ -1,0 +1,32 @@
+<section id="services" class="services">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">{{ 'services.title' | translate }}</h2>
+      <p class="section-subtitle">{{ 'services.subtitle' | translate }}</p>
+    </div>
+
+    <div class="services-grid">
+      <div *ngFor="let service of services" class="service-card">
+        <div class="service-icon">
+          <span class="icon-emoji">{{ getIconClass(service.icon) }}</span>
+        </div>
+        <h3 class="service-title">{{ service.title }}</h3>
+        <p class="service-description">{{ service.description }}</p>
+        <ul class="service-features">
+          <li *ngFor="let feature of service.features" class="feature-item">
+            <svg class="check-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>{{ feature }}</span>
+          </li>
+        </ul>
+        <button class="service-btn">
+          {{ 'services.learnMore' | translate }}
+          <svg class="btn-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

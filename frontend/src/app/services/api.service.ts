@@ -59,8 +59,8 @@ export class ApiService {
   getContent(language: string = 'en'): Observable<ContentResponse> {
     return this.http.get<ContentResponse>(`${this.apiUrl}/v1/content?language=${language}`)
       .pipe(
-        timeout(this.timeout),
-        retry(this.maxRetries),
+        timeout<ContentResponse>(this.timeout),
+        retry<ContentResponse>(this.maxRetries),
         catchError(this.handleError)
       );
   }
@@ -79,7 +79,7 @@ export class ApiService {
 
     return this.http.post(`${this.apiUrl}/v1/leads`, data)
       .pipe(
-        timeout(this.timeout),
+        timeout<any>(this.timeout),
         catchError(this.handleError)
       );
   }
@@ -90,7 +90,7 @@ export class ApiService {
   healthCheck(): Observable<any> {
     return this.http.get(`${this.apiUrl}/health`)
       .pipe(
-        timeout(5000), // Shorter timeout for health check
+        timeout<any>(5000), // Shorter timeout for health check
         catchError(this.handleError)
       );
   }

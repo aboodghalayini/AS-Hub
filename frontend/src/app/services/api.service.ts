@@ -4,12 +4,27 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface ContentResponse {
-  services: any[];
-  pricing: any[];
-  features: any[];
-  testimonials: any[];
-  faq: any[];
-  settings: any;
+  success?: boolean;
+  language?: string;
+  data?: {
+    services: any[];
+    pricing: any[];
+    pricing_by_service?: {
+      website: any[];
+      app: any[];
+      both: any[];
+    };
+    features: any[];
+    testimonials: any[];
+    faq: any[];
+    settings: any;
+  };
+  services?: any[];
+  pricing?: any[];
+  features?: any[];
+  testimonials?: any[];
+  faq?: any[];
+  settings?: any;
 }
 
 export interface LeadRequest {
@@ -33,7 +48,7 @@ export class ApiService {
    * Get all landing page content
    */
   getContent(language: string = 'en'): Observable<ContentResponse> {
-    return this.http.get<ContentResponse>(`${this.apiUrl}/v1/content?lang=${language}`);
+    return this.http.get<ContentResponse>(`${this.apiUrl}/v1/content?language=${language}`);
   }
 
   /**

@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
+import { TranslationService } from '../../services/translation.service';
+import { Subject, takeUntil } from 'rxjs';
 
 interface Testimonial {
   id: number;
@@ -20,78 +22,91 @@ interface Testimonial {
   templateUrl: './testimonials.component.html',
   styleUrls: ['./testimonials.component.scss']
 })
-export class TestimonialsComponent implements OnInit {
+export class TestimonialsComponent implements OnInit, OnDestroy {
   testimonials: Testimonial[] = [];
   loading = true;
   currentIndex = 0;
+  currentLanguage: string = 'en';
+  private destroy$ = new Subject<void>();
+  private autoSlideInterval: any;
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private translationService: TranslationService
+  ) {}
 
   ngOnInit(): void {
-    this.loadTestimonials();
+    // Subscribe to language changes
+    this.translationService.currentLanguage$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(lang => {
+        this.currentLanguage = lang;
+        this.loadTestimonials();
+      });
+    
     this.startAutoSlide();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    if (this.autoSlideInterval) {
+      clearInterval(this.autoSlideInterval);
+    }
+  }
+
   loadTestimonials(): void {
-    this.apiService.getContent().subscribe({
+    this.loading = true;
+    console.log('🔄 Loading testimonials for language:', this.currentLanguage);
+    
+    this.apiService.getContent(this.currentLanguage).subscribe({
       next: (response) => {
-        this.testimonials = response.testimonials || [];
+        console.log('✅ Testimonials API response:', response);
+        
+        // Handle different response formats
+        if (response.data) {
+          this.testimonials = response.data.testimonials || [];
+        } else {
+          this.testimonials = response.testimonials || [];
+        }
+        
         this.loading = false;
+        console.log('📊 Total testimonials loaded:', this.testimonials.length);
+        
+        // Reset current index if needed
+        if (this.currentIndex >= this.testimonials.length) {
+          this.currentIndex = 0;
+        }
       },
       error: (error) => {
-        console.error('Error loading testimonials:', error);
+        console.error('❌ Error loading testimonials:', error);
         this.loading = false;
-        this.loadDefaultTestimonials();
+        // No fallback - show empty state
+        this.testimonials = [];
       }
     });
   }
 
-  loadDefaultTestimonials(): void {
-    this.testimonials = [
-      {
-        id: 1,
-        client_name: 'testimonials.client1.name',
-        client_position: 'testimonials.client1.position',
-        client_company: 'testimonials.client1.company',
-        client_avatar: 'assets/images/avatar1.jpg',
-        testimonial: 'testimonials.client1.text',
-        rating: 5
-      },
-      {
-        id: 2,
-        client_name: 'testimonials.client2.name',
-        client_position: 'testimonials.client2.position',
-        client_company: 'testimonials.client2.company',
-        client_avatar: 'assets/images/avatar2.jpg',
-        testimonial: 'testimonials.client2.text',
-        rating: 5
-      },
-      {
-        id: 3,
-        client_name: 'testimonials.client3.name',
-        client_position: 'testimonials.client3.position',
-        client_company: 'testimonials.client3.company',
-        client_avatar: 'assets/images/avatar3.jpg',
-        testimonial: 'testimonials.client3.text',
-        rating: 5
-      }
-    ];
-  }
-
   startAutoSlide(): void {
-    setInterval(() => {
-      this.nextSlide();
+    this.autoSlideInterval = setInterval(() => {
+      if (this.testimonials.length > 0) {
+        this.nextSlide();
+      }
     }, 5000);
   }
 
   nextSlide(): void {
-    this.currentIndex = (this.currentIndex + 1) % this.testimonials.length;
+    if (this.testimonials.length > 0) {
+      this.currentIndex = (this.currentIndex + 1) % this.testimonials.length;
+    }
   }
 
   prevSlide(): void {
-    this.currentIndex = this.currentIndex === 0 
-      ? this.testimonials.length - 1 
-      : this.currentIndex - 1;
+    if (this.testimonials.length > 0) {
+      this.currentIndex = this.currentIndex === 0 
+        ? this.testimonials.length - 1 
+        : this.currentIndex - 1;
+    }
   }
 
   goToSlide(index: number): void {
@@ -100,5 +115,14 @@ export class TestimonialsComponent implements OnInit {
 
   getStars(rating: number): number[] {
     return Array(rating).fill(0);
+  }
+
+  getInitials(name: string): string {
+    if (!name) return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) {
+      return parts[0].charAt(0).toUpperCase();
+    }
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
   }
 }

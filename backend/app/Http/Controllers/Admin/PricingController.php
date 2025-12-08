@@ -19,7 +19,8 @@ class PricingController extends Controller
     public function index(Request $request)
     {
         $language = $request->input('language');
-        $perPage = $request->input('per_page', 100);
+        $serviceType = $request->input('service_type');
+        $tier = $request->input('tier');
 
         $query = PricingPlan::query();
         
@@ -27,8 +28,38 @@ class PricingController extends Controller
         if ($language && $language !== 'all') {
             $query->where('language', $language);
         }
+
+        // Filter by service type if specified
+        if ($serviceType && $serviceType !== 'all') {
+            $query->where('service_type', $serviceType);
+        }
+
+        // Filter by tier if specified
+        if ($tier && $tier !== 'all') {
+            $query->where('tier', $tier);
+        }
         
-        $plans = $query->ordered()->get();
+        $plans = $query->ordered()->get()->map(function ($plan) {
+            return [
+                'id' => $plan->id,
+                'language' => $plan->language,
+                'service_type' => $plan->service_type,
+                'tier' => $plan->tier,
+                'name' => $plan->name,
+                'slug' => $plan->slug,
+                'description' => $plan->description,
+                'price_monthly' => (float) $plan->price_monthly,
+                'price_yearly' => (float) $plan->price_yearly,
+                'features' => $plan->features,
+                'is_popular' => $plan->is_popular,
+                'order' => $plan->order,
+                'is_active' => $plan->is_active,
+                'savings' => $plan->savings,
+                'savings_percentage' => $plan->savings_percentage,
+                'created_at' => $plan->created_at,
+                'updated_at' => $plan->updated_at,
+            ];
+        });
 
         return response()->json([
             'success' => true,
@@ -46,12 +77,14 @@ class PricingController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'language' => 'required|in:en,ar',
+            'service_type' => 'required|in:website,app,both',
+            'tier' => 'required|in:basic,professional,enterprise',
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'price_monthly' => 'required|numeric|min:0',
             'price_yearly' => 'required|numeric|min:0',
-            'features' => 'nullable|array',
-            'features.*' => 'string',
+            'features' => 'required|array|min:1',
+            'features.*' => 'required|string',
             'is_popular' => 'nullable|boolean',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
@@ -66,10 +99,25 @@ class PricingController extends Controller
         }
 
         try {
+            // Check for duplicate (same language, service_type, and tier)
+            $exists = PricingPlan::where('language', $request->language)
+                ->where('service_type', $request->service_type)
+                ->where('tier', $request->tier)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'A pricing plan with this language, service type, and tier already exists'
+                ], 422);
+            }
+
             $plan = PricingPlan::create([
                 'language' => $request->language,
+                'service_type' => $request->service_type,
+                'tier' => $request->tier,
                 'name' => $request->name,
-                'slug' => Str::slug($request->name),
+                'slug' => $request->slug ?? Str::slug($request->name),
                 'description' => $request->description,
                 'price_monthly' => $request->price_monthly,
                 'price_yearly' => $request->price_yearly,
@@ -113,7 +161,25 @@ class PricingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $plan
+            'data' => [
+                'id' => $plan->id,
+                'language' => $plan->language,
+                'service_type' => $plan->service_type,
+                'tier' => $plan->tier,
+                'name' => $plan->name,
+                'slug' => $plan->slug,
+                'description' => $plan->description,
+                'price_monthly' => (float) $plan->price_monthly,
+                'price_yearly' => (float) $plan->price_yearly,
+                'features' => $plan->features,
+                'is_popular' => $plan->is_popular,
+                'order' => $plan->order,
+                'is_active' => $plan->is_active,
+                'savings' => $plan->savings,
+                'savings_percentage' => $plan->savings_percentage,
+                'created_at' => $plan->created_at,
+                'updated_at' => $plan->updated_at,
+            ]
         ]);
     }
 
@@ -137,12 +203,14 @@ class PricingController extends Controller
 
         $validator = Validator::make($request->all(), [
             'language' => 'sometimes|in:en,ar',
+            'service_type' => 'sometimes|in:website,app,both',
+            'tier' => 'sometimes|in:basic,professional,enterprise',
             'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'sometimes|string',
             'price_monthly' => 'sometimes|numeric|min:0',
             'price_yearly' => 'sometimes|numeric|min:0',
-            'features' => 'nullable|array',
-            'features.*' => 'string',
+            'features' => 'sometimes|array|min:1',
+            'features.*' => 'required|string',
             'is_popular' => 'nullable|boolean',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
@@ -157,13 +225,34 @@ class PricingController extends Controller
         }
 
         try {
+            // Check for duplicate if language, service_type, or tier is being changed
+            if ($request->has('language') || $request->has('service_type') || $request->has('tier')) {
+                $language = $request->input('language', $plan->language);
+                $serviceType = $request->input('service_type', $plan->service_type);
+                $tier = $request->input('tier', $plan->tier);
+
+                $exists = PricingPlan::where('language', $language)
+                    ->where('service_type', $serviceType)
+                    ->where('tier', $tier)
+                    ->where('id', '!=', $id)
+                    ->exists();
+
+                if ($exists) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'A pricing plan with this language, service type, and tier already exists'
+                    ], 422);
+                }
+            }
+
             $updateData = $request->only([
-                'language', 'name', 'description', 'price_monthly', 
-                'price_yearly', 'features', 'is_popular', 'order', 'is_active'
+                'language', 'service_type', 'tier', 'name', 'description', 
+                'price_monthly', 'price_yearly', 'features', 'is_popular', 
+                'order', 'is_active'
             ]);
 
             if (isset($updateData['name'])) {
-                $updateData['slug'] = Str::slug($updateData['name']);
+                $updateData['slug'] = $request->slug ?? Str::slug($updateData['name']);
             }
 
             $plan->update($updateData);

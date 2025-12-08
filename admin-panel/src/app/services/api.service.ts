@@ -85,6 +85,10 @@ export class ApiService {
     return this.delete(`/admin/features/${id}`);
   }
 
+  toggleFeature(id: number): Observable<any> {
+    return this.post(`/admin/features/${id}/toggle`, {});
+  }
+
   // Testimonials
   getTestimonials(language: string = 'en'): Observable<any> {
     return this.get('/admin/testimonials', { language });

@@ -28,6 +28,25 @@ class ContentController extends Controller
         }
 
         try {
+            // Get all pricing plans and group by service type
+            $allPricingPlans = PricingPlan::active()
+                ->language($language)
+                ->ordered()
+                ->get();
+
+            // Group pricing plans by service type
+            $pricingByServiceType = [
+                'website' => $allPricingPlans->where('service_type', 'website')->values()->map(function ($plan) {
+                    return $this->formatPricingPlan($plan);
+                }),
+                'app' => $allPricingPlans->where('service_type', 'app')->values()->map(function ($plan) {
+                    return $this->formatPricingPlan($plan);
+                }),
+                'both' => $allPricingPlans->where('service_type', 'both')->values()->map(function ($plan) {
+                    return $this->formatPricingPlan($plan);
+                }),
+            ];
+
             $content = [
                 'services' => Service::active()
                     ->language($language)
@@ -44,22 +63,13 @@ class ContentController extends Controller
                         ];
                     }),
 
-                'pricing' => PricingPlan::active()
-                    ->language($language)
-                    ->ordered()
-                    ->get()
-                    ->map(function ($plan) {
-                        return [
-                            'id' => $plan->id,
-                            'name' => $plan->name,
-                            'slug' => $plan->slug,
-                            'description' => $plan->description,
-                            'price_monthly' => (float) $plan->price_monthly,
-                            'price_yearly' => (float) $plan->price_yearly,
-                            'features' => $plan->features,
-                            'is_popular' => $plan->is_popular,
-                        ];
-                    }),
+                // Return both formats for backward compatibility
+                'pricing' => $allPricingPlans->map(function ($plan) {
+                    return $this->formatPricingPlan($plan);
+                }),
+
+                // New grouped format
+                'pricing_by_service' => $pricingByServiceType,
 
                 'features' => Feature::active()
                     ->language($language)
@@ -119,5 +129,29 @@ class ContentController extends Controller
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
+    }
+
+    /**
+     * Format pricing plan data.
+     *
+     * @param  \App\Models\PricingPlan  $plan
+     * @return array
+     */
+    private function formatPricingPlan($plan)
+    {
+        return [
+            'id' => $plan->id,
+            'service_type' => $plan->service_type,
+            'tier' => $plan->tier,
+            'name' => $plan->name,
+            'slug' => $plan->slug,
+            'description' => $plan->description,
+            'price_monthly' => (float) $plan->price_monthly,
+            'price_yearly' => (float) $plan->price_yearly,
+            'features' => $plan->features,
+            'is_popular' => $plan->is_popular,
+            'savings' => $plan->savings,
+            'savings_percentage' => $plan->savings_percentage,
+        ];
     }
 }

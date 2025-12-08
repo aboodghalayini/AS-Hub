@@ -6,36 +6,36 @@
   </div>
 
   <div class="container">
-    <div class="hero-content">
+    <div class="hero-content" *ngIf="!loading">
       <div class="hero-text">
-        <h1 class="hero-title animate-fade-in">
-          {{ 'hero.title' | translate }}
+        <h1 class="hero-title animate-fade-in" *ngIf="heroTitle">
+          {{ heroTitle }}
         </h1>
-        <p class="hero-subtitle animate-fade-in-delay-1">
-          {{ 'hero.subtitle' | translate }}
+        <p class="hero-subtitle animate-fade-in-delay-1" *ngIf="heroSubtitle">
+          {{ heroSubtitle }}
         </p>
-        <p class="hero-description animate-fade-in-delay-2">
-          {{ 'hero.description' | translate }}
+        <p class="hero-description animate-fade-in-delay-2" *ngIf="heroDescription">
+          {{ heroDescription }}
         </p>
 
-        <div class="hero-actions animate-fade-in-delay-3">
-          <button class="btn btn-primary btn-lg" (click)="scrollToContact()">
-            <span>{{ 'hero.ctaDemo' | translate }}</span>
+        <div class="hero-actions animate-fade-in-delay-3" *ngIf="ctaDemo || ctaStart">
+          <button class="btn btn-primary btn-lg" (click)="scrollToContact()" *ngIf="ctaDemo">
+            <span>{{ ctaDemo }}</span>
             <svg class="btn-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
-          <button class="btn btn-outline btn-lg" (click)="scrollToPricing()">
-            {{ 'hero.ctaStart' | translate }}
+          <button class="btn btn-outline btn-lg" (click)="scrollToPricing()" *ngIf="ctaStart">
+            {{ ctaStart }}
           </button>
         </div>
 
-        <div class="hero-pricing-hint animate-fade-in-delay-4">
+        <div class="hero-pricing-hint animate-fade-in-delay-4" *ngIf="pricingHint">
           <svg class="pricing-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" stroke="#3b82f6" stroke-width="2"/>
             <path d="M10 6V10L13 13" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          <span>{{ 'hero.pricingHint' | translate }}</span>
+          <span>{{ pricingHint }}</span>
         </div>
       </div>
 
@@ -73,6 +73,25 @@
               <rect x="260" y="180" width="100" height="80" rx="8" fill="#1e3a8a" opacity="0.1"/>
             </svg>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="hero-content" *ngIf="loading">
+      <div class="hero-text">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-subtitle"></div>
+        <div class="skeleton skeleton-description"></div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="hero-content empty-state" *ngIf="!loading && !heroTitle && !heroSubtitle">
+      <div class="hero-text">
+        <div class="empty-message">
+          <i class="bi bi-info-circle"></i>
+          <p>Hero content not configured yet. Please add content from Admin Panel.</p>
         </div>
       </div>
     </div>

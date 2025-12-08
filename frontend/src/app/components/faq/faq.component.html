@@ -1,7 +1,6 @@
 <section id="faq" class="faq-section">
   <div class="container">
-    <!-- Section Header -->
-    <div class="section-header" data-aos="fade-up">
+    <div class="section-header text-center">
       <h2 class="section-title">{{ 'faq.title' | translate }}</h2>
       <p class="section-subtitle">{{ 'faq.subtitle' | translate }}</p>
     </div>
@@ -13,55 +12,55 @@
       </div>
     </div>
 
-    <!-- Category Filter -->
-    <div *ngIf="!loading && categories.length > 1" class="category-filter" data-aos="fade-up" data-aos-delay="100">
-      <button 
-        *ngFor="let category of categories"
-        [class.active]="selectedCategory === category"
-        (click)="filterByCategory(category)"
-        class="category-btn"
-      >
-        {{ 'faq.categories.' + category | translate }}
-      </button>
-    </div>
-
     <!-- FAQ Accordion -->
-    <div *ngIf="!loading" class="faq-accordion" data-aos="fade-up" data-aos-delay="200">
-      <div 
-        *ngFor="let faq of filteredFaqs; let i = index" 
-        class="faq-item"
-        [class.active]="faq.isOpen"
-      >
-        <button 
-          class="faq-question" 
-          (click)="toggleFaq(faq)"
-          [attr.aria-expanded]="faq.isOpen"
-        >
-          <span class="question-text">{{ faq.question | translate }}</span>
+    <div *ngIf="!loading && faqs.length > 0" class="faq-container">
+      <div *ngFor="let faq of faqs; let i = index" 
+           class="faq-item animate-fade-in"
+           [class.active]="activeIndex === i"
+           [style.animation-delay]="(i * 0.05) + 's'">
+        
+        <button class="faq-question" (click)="toggleFaq(i)">
+          <span class="question-text">{{ faq.question }}</span>
           <span class="toggle-icon">
-            <i [class]="faq.isOpen ? 'bi bi-dash-circle' : 'bi bi-plus-circle'"></i>
+            <i class="bi" [class.bi-chevron-down]="activeIndex !== i" [class.bi-chevron-up]="activeIndex === i"></i>
           </span>
         </button>
-        
-        <div class="faq-answer" [class.show]="faq.isOpen">
+
+        <div class="faq-answer" [class.show]="activeIndex === i">
           <div class="answer-content">
-            <p>{{ faq.answer | translate }}</p>
+            <p>{{ faq.answer }}</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Still Have Questions CTA -->
-    <div class="faq-cta" data-aos="fade-up" data-aos-delay="400">
-      <div class="cta-content">
-        <i class="bi bi-question-circle-fill"></i>
-        <h3>{{ 'faq.stillHaveQuestions' | translate }}</h3>
-        <p>{{ 'faq.contactUs' | translate }}</p>
-        <a href="#contact" class="btn btn-primary btn-lg">
-          {{ 'faq.getInTouch' | translate }}
-          <i class="bi bi-arrow-right ms-2"></i>
-        </a>
+    <!-- Empty State -->
+    <div *ngIf="!loading && faqs.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-question-circle"></i>
       </div>
+      <h3 class="empty-title">No FAQs Available Yet</h3>
+      <p class="empty-description">
+        Frequently asked questions will appear here once they are added from the Admin Panel.
+      </p>
+      <div class="empty-illustration">
+        <svg viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="75" r="50" fill="#E5E7EB"/>
+          <text x="100" y="90" font-size="60" fill="#9CA3AF" text-anchor="middle" font-weight="bold">?</text>
+          <circle cx="70" cy="50" r="15" fill="#D1D5DB"/>
+          <circle cx="130" cy="50" r="15" fill="#D1D5DB"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Contact CTA -->
+    <div *ngIf="!loading && faqs.length > 0" class="faq-cta">
+      <h3>{{ 'faq.stillHaveQuestions' | translate }}</h3>
+      <p>{{ 'faq.contactUs' | translate }}</p>
+      <a href="#contact" class="cta-button">
+        <i class="bi bi-envelope"></i>
+        {{ 'faq.getInTouch' | translate }}
+      </a>
     </div>
   </div>
 </section>

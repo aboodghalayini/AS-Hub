@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
+import { TranslationService } from '../../services/translation.service';
+import { Subject, takeUntil } from 'rxjs';
 
 interface FaqItem {
   id: number;
@@ -18,82 +20,68 @@ interface FaqItem {
   templateUrl: './faq.component.html',
   styleUrls: ['./faq.component.scss']
 })
-export class FaqComponent implements OnInit {
+export class FaqComponent implements OnInit, OnDestroy {
   faqs: FaqItem[] = [];
   loading = true;
+  activeIndex: number | null = null;
   selectedCategory = 'all';
   categories: string[] = ['all'];
+  currentLanguage: string = 'en';
+  private destroy$ = new Subject<void>();
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private translationService: TranslationService
+  ) {}
 
   ngOnInit(): void {
-    this.loadFaqs();
+    // Subscribe to language changes
+    this.translationService.currentLanguage$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(lang => {
+        this.currentLanguage = lang;
+        this.loadFaqs();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadFaqs(): void {
-    this.apiService.getContent().subscribe({
+    this.loading = true;
+    console.log('🔄 Loading FAQs for language:', this.currentLanguage);
+    
+    this.apiService.getContent(this.currentLanguage).subscribe({
       next: (response) => {
-        this.faqs = (response.faq || []).map((faq: FaqItem) => ({
+        console.log('✅ FAQ API response:', response);
+        
+        // Handle different response formats
+        let faqData: FaqItem[] = [];
+        if (response.data) {
+          faqData = response.data.faq || [];
+        } else {
+          faqData = response.faq || [];
+        }
+        
+        this.faqs = faqData.map((faq: FaqItem) => ({
           ...faq,
           isOpen: false
         }));
+        
         this.extractCategories();
         this.loading = false;
+        console.log('📊 Total FAQs loaded:', this.faqs.length);
       },
       error: (error) => {
-        console.error('Error loading FAQs:', error);
+        console.error('❌ Error loading FAQs:', error);
         this.loading = false;
-        this.loadDefaultFaqs();
+        // No fallback - show empty state
+        this.faqs = [];
+        this.extractCategories();
       }
     });
-  }
-
-  loadDefaultFaqs(): void {
-    this.faqs = [
-      {
-        id: 1,
-        question: 'faq.q1.question',
-        answer: 'faq.q1.answer',
-        category: 'general',
-        isOpen: false
-      },
-      {
-        id: 2,
-        question: 'faq.q2.question',
-        answer: 'faq.q2.answer',
-        category: 'pricing',
-        isOpen: false
-      },
-      {
-        id: 3,
-        question: 'faq.q3.question',
-        answer: 'faq.q3.answer',
-        category: 'technical',
-        isOpen: false
-      },
-      {
-        id: 4,
-        question: 'faq.q4.question',
-        answer: 'faq.q4.answer',
-        category: 'support',
-        isOpen: false
-      },
-      {
-        id: 5,
-        question: 'faq.q5.question',
-        answer: 'faq.q5.answer',
-        category: 'general',
-        isOpen: false
-      },
-      {
-        id: 6,
-        question: 'faq.q6.question',
-        answer: 'faq.q6.answer',
-        category: 'pricing',
-        isOpen: false
-      }
-    ];
-    this.extractCategories();
   }
 
   extractCategories(): void {
@@ -105,8 +93,8 @@ export class FaqComponent implements OnInit {
     this.categories = ['all', ...Array.from(uniqueCategories)];
   }
 
-  toggleFaq(faq: FaqItem): void {
-    faq.isOpen = !faq.isOpen;
+  toggleFaq(index: number): void {
+    this.activeIndex = this.activeIndex === index ? null : index;
   }
 
   filterByCategory(category: string): void {

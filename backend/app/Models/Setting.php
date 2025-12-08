@@ -91,11 +91,8 @@ class Setting extends Model
     {
         return static::where('language', $language)
             ->get()
-            ->groupBy('group')
-            ->map(function ($settings) {
-                return $settings->mapWithKeys(function ($setting) {
-                    return [$setting->key => $setting->getTypedValue()];
-                });
+            ->mapWithKeys(function ($setting) {
+                return [$setting->key => $setting->getTypedValue()];
             });
     }
 }

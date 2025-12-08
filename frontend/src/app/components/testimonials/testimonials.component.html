@@ -1,7 +1,6 @@
 <section id="testimonials" class="testimonials-section">
   <div class="container">
-    <!-- Section Header -->
-    <div class="section-header" data-aos="fade-up">
+    <div class="section-header text-center">
       <h2 class="section-title">{{ 'testimonials.title' | translate }}</h2>
       <p class="section-subtitle">{{ 'testimonials.subtitle' | translate }}</p>
     </div>
@@ -13,67 +12,60 @@
       </div>
     </div>
 
-    <!-- Testimonials Carousel -->
-    <div *ngIf="!loading && testimonials.length > 0" class="testimonials-carousel" data-aos="fade-up" data-aos-delay="200">
-      <div class="carousel-container">
-        <!-- Testimonial Cards -->
-        <div class="testimonial-track" [style.transform]="'translateX(-' + (currentIndex * 100) + '%)'">
-          <div *ngFor="let testimonial of testimonials" class="testimonial-card">
-            <div class="quote-icon">
-              <i class="bi bi-quote"></i>
-            </div>
-            
-            <div class="rating">
-              <i *ngFor="let star of getStars(testimonial.rating)" class="bi bi-star-fill"></i>
-            </div>
-
-            <p class="testimonial-text">{{ testimonial.testimonial | translate }}</p>
-
-            <div class="client-info">
-              <div class="client-avatar">
-                <img [src]="testimonial.client_avatar" [alt]="testimonial.client_name | translate" 
-                     onerror="this.src='assets/images/default-avatar.png'">
-              </div>
-              <div class="client-details">
-                <h4 class="client-name">{{ testimonial.client_name | translate }}</h4>
-                <p class="client-position">
-                  {{ testimonial.client_position | translate }}
-                  <span *ngIf="testimonial.client_company"> • {{ testimonial.client_company | translate }}</span>
-                </p>
-              </div>
-            </div>
-          </div>
+    <!-- Testimonials Grid -->
+    <div *ngIf="!loading && testimonials.length > 0" class="testimonials-grid">
+      <div *ngFor="let testimonial of testimonials; let i = index" 
+           class="testimonial-card animate-fade-in"
+           [style.animation-delay]="(i * 0.1) + 's'">
+        
+        <div class="quote-icon">
+          <i class="bi bi-quote"></i>
         </div>
 
-        <!-- Navigation Arrows -->
-        <button class="carousel-btn prev-btn" (click)="prevSlide()" aria-label="Previous testimonial">
-          <i class="bi bi-chevron-left"></i>
-        </button>
-        <button class="carousel-btn next-btn" (click)="nextSlide()" aria-label="Next testimonial">
-          <i class="bi bi-chevron-right"></i>
-        </button>
-      </div>
+        <div class="rating">
+          <i *ngFor="let star of [1,2,3,4,5]" 
+             class="bi" 
+             [class.bi-star-fill]="star <= testimonial.rating"
+             [class.bi-star]="star > testimonial.rating"></i>
+        </div>
 
-      <!-- Carousel Indicators -->
-      <div class="carousel-indicators">
-        <button 
-          *ngFor="let testimonial of testimonials; let i = index"
-          [class.active]="i === currentIndex"
-          (click)="goToSlide(i)"
-          [attr.aria-label]="'Go to testimonial ' + (i + 1)"
-        ></button>
+        <p class="testimonial-text">{{ testimonial.testimonial }}</p>
+
+        <div class="client-info">
+          <div class="client-avatar" *ngIf="testimonial.client_avatar">
+            <img [src]="testimonial.client_avatar" [alt]="testimonial.client_name">
+          </div>
+          <div class="client-avatar placeholder" *ngIf="!testimonial.client_avatar">
+            <span>{{ getInitials(testimonial.client_name) }}</span>
+          </div>
+          <div class="client-details">
+            <h4 class="client-name">{{ testimonial.client_name }}</h4>
+            <p class="client-position" *ngIf="testimonial.client_position">
+              {{ testimonial.client_position }}
+              <span *ngIf="testimonial.client_company"> at {{ testimonial.client_company }}</span>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Client Logos -->
-    <div class="client-logos" data-aos="fade-up" data-aos-delay="400">
-      <h3 class="logos-title">{{ 'testimonials.trustedBy' | translate }}</h3>
-      <div class="logos-grid">
-        <div class="logo-item" *ngFor="let i of [1,2,3,4,5,6]">
-          <img [src]="'assets/images/clients/client-' + i + '.png'" 
-               [alt]="'Client ' + i"
-               onerror="this.style.display='none'">
-        </div>
+    <!-- Empty State -->
+    <div *ngIf="!loading && testimonials.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-chat-quote"></i>
+      </div>
+      <h3 class="empty-title">No Testimonials Available Yet</h3>
+      <p class="empty-description">
+        Client testimonials will appear here once they are added from the Admin Panel.
+      </p>
+      <div class="empty-illustration">
+        <svg viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="40" width="160" height="70" rx="12" fill="#E5E7EB"/>
+          <circle cx="50" cy="30" r="20" fill="#D1D5DB"/>
+          <rect x="80" y="20" width="80" height="8" rx="4" fill="#D1D5DB"/>
+          <rect x="80" y="35" width="60" height="6" rx="3" fill="#E5E7EB"/>
+          <path d="M35 60Q35 50 45 50T55 60" stroke="#9CA3AF" stroke-width="2" fill="none"/>
+        </svg>
       </div>
     </div>
   </div>

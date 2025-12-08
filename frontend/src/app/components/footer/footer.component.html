@@ -8,10 +8,10 @@
           <div class="footer-logo">
             <h2>AS Hub</h2>
           </div>
-          <p class="footer-description">
-            {{ 'footer.description' | translate }}
+          <p class="footer-description" *ngIf="companyDescription">
+            {{ companyDescription }}
           </p>
-          <div class="social-links">
+          <div class="social-links" *ngIf="socialLinks.length > 0">
             <a 
               *ngFor="let social of socialLinks"
               [href]="social.url" 
@@ -27,53 +27,49 @@
 
         <!-- Quick Links -->
         <div class="footer-column">
-          <h3 class="footer-title">{{ 'footer.quickLinks' | translate }}</h3>
+          <h3 class="footer-title">Quick Links</h3>
           <ul class="footer-links">
             <li *ngFor="let link of quickLinks">
-              <a [href]="link.href">{{ link.label | translate }}</a>
+              <a [href]="link.href">{{ link.label }}</a>
             </li>
           </ul>
         </div>
 
         <!-- Services -->
         <div class="footer-column">
-          <h3 class="footer-title">{{ 'footer.servicesTitle' | translate }}</h3>
+          <h3 class="footer-title">Services</h3>
           <ul class="footer-links">
             <li *ngFor="let service of services">
-              <a [href]="service.href">{{ service.label | translate }}</a>
+              <a [href]="service.href">{{ service.label }}</a>
             </li>
           </ul>
         </div>
 
         <!-- Support -->
         <div class="footer-column">
-          <h3 class="footer-title">{{ 'footer.supportTitle' | translate }}</h3>
+          <h3 class="footer-title">Support</h3>
           <ul class="footer-links">
             <li *ngFor="let item of support">
-              <a [href]="item.href">{{ item.label | translate }}</a>
+              <a [href]="item.href">{{ item.label }}</a>
             </li>
           </ul>
         </div>
 
         <!-- Contact Info -->
         <div class="footer-column">
-          <h3 class="footer-title">{{ 'footer.contactTitle' | translate }}</h3>
+          <h3 class="footer-title">Contact Us</h3>
           <ul class="footer-contact">
-            <li>
+            <li *ngIf="contactAddress">
               <i class="bi bi-geo-alt-fill"></i>
-              <span>{{ 'footer.address' | translate }}</span>
+              <span>{{ contactAddress }}</span>
             </li>
-            <li>
+            <li *ngIf="contactEmail">
               <i class="bi bi-envelope-fill"></i>
-              <a href="mailto:info@ashub.com">info&#64;ashub.com</a>
+              <a [href]="'mailto:' + contactEmail">{{ contactEmail }}</a>
             </li>
-            <li>
+            <li *ngIf="contactPhone">
               <i class="bi bi-telephone-fill"></i>
-              <a href="tel:+15551234567">+1 (555) 123-4567</a>
-            </li>
-            <li>
-              <i class="bi bi-clock-fill"></i>
-              <span>{{ 'footer.hours' | translate }}</span>
+              <a [href]="'tel:' + contactPhone">{{ contactPhone }}</a>
             </li>
           </ul>
         </div>
@@ -86,14 +82,12 @@
     <div class="container">
       <div class="footer-bottom-content">
         <p class="copyright">
-          © {{ currentYear }} AS Hub. {{ 'footer.copyright' | translate }}
+          © {{ currentYear }} AS Hub. All rights reserved.
         </p>
         <div class="footer-bottom-links">
-          <a href="/privacy">{{ 'footer.privacy' | translate }}</a>
+          <a href="/privacy">Privacy Policy</a>
           <span class="separator">•</span>
-          <a href="/terms">{{ 'footer.terms' | translate }}</a>
-          <span class="separator">•</span>
-          <a href="/cookies">{{ 'footer.cookies' | translate }}</a>
+          <a href="/terms">Terms of Service</a>
         </div>
       </div>
     </div>

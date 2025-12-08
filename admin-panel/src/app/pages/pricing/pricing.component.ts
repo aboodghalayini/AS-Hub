@@ -4,9 +4,14 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Va
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 
+type ServiceType = 'website' | 'app' | 'both';
+type PlanTier = 'basic' | 'professional' | 'enterprise';
+
 interface PricingPlan {
   id?: number;
   language: string;
+  service_type: ServiceType;
+  tier: PlanTier;
   name: string;
   slug?: string;
   description: string;
@@ -16,6 +21,13 @@ interface PricingPlan {
   is_popular: boolean;
   order: number;
   is_active: boolean;
+}
+
+interface ServiceCategory {
+  id: ServiceType;
+  name: string;
+  nameAr: string;
+  icon: string;
 }
 
 @Component({
@@ -33,10 +45,26 @@ export class PricingComponent implements OnInit {
   showModal = false;
   isEditMode = false;
   selectedLanguage = 'all';
+  selectedServiceType: ServiceType | 'all' = 'all';
+  selectedTier: PlanTier | 'all' = 'all';
   searchTerm = '';
   
   planForm!: FormGroup;
   currentPlan: PricingPlan | null = null;
+
+  // Service categories
+  serviceCategories: ServiceCategory[] = [
+    { id: 'website', name: 'Website Development', nameAr: 'تطوير المواقع', icon: '🌐' },
+    { id: 'app', name: 'Mobile App Development', nameAr: 'تطوير التطبيقات', icon: '📱' },
+    { id: 'both', name: 'Website + App Package', nameAr: 'باقة الموقع والتطبيق', icon: '🚀' }
+  ];
+
+  // Plan tiers
+  planTiers = [
+    { id: 'basic', name: 'Basic', nameAr: 'أساسي' },
+    { id: 'professional', name: 'Professional', nameAr: 'احترافي' },
+    { id: 'enterprise', name: 'Enterprise', nameAr: 'مؤسسي' }
+  ];
 
   constructor(
     private apiService: ApiService,
@@ -52,8 +80,10 @@ export class PricingComponent implements OnInit {
   initForm() {
     this.planForm = this.fb.group({
       language: ['en', Validators.required],
+      service_type: ['website', Validators.required],
+      tier: ['basic', Validators.required],
       name: ['', Validators.required],
-      description: [''],
+      description: ['', Validators.required],
       price_monthly: [0, [Validators.required, Validators.min(0)]],
       price_yearly: [0, [Validators.required, Validators.min(0)]],
       features: this.fb.array([]),
@@ -62,7 +92,9 @@ export class PricingComponent implements OnInit {
       order: [0]
     });
 
-    // Add initial feature field
+    // Add initial feature fields
+    this.addFeature();
+    this.addFeature();
     this.addFeature();
   }
 
@@ -71,7 +103,7 @@ export class PricingComponent implements OnInit {
   }
 
   addFeature() {
-    this.features.push(this.fb.control(''));
+    this.features.push(this.fb.control('', Validators.required));
   }
 
   removeFeature(index: number) {
@@ -88,7 +120,6 @@ export class PricingComponent implements OnInit {
         
         // Handle different response formats
         if (response.data) {
-          // If data is paginated
           if (response.data.data) {
             this.plans = response.data.data;
           } else {
@@ -106,7 +137,6 @@ export class PricingComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading pricing plans:', error);
-        alert('Error loading pricing plans: ' + (error.error?.message || error.message || 'Unknown error'));
         this.plans = [];
         this.filteredPlans = [];
         this.loading = false;
@@ -123,6 +153,16 @@ export class PricingComponent implements OnInit {
     this.applyFilters();
   }
 
+  filterByServiceType(type: ServiceType | 'all') {
+    this.selectedServiceType = type;
+    this.applyFilters();
+  }
+
+  filterByTier(tier: PlanTier | 'all') {
+    this.selectedTier = tier;
+    this.applyFilters();
+  }
+
   onSearch() {
     this.applyFilters();
   }
@@ -135,6 +175,16 @@ export class PricingComponent implements OnInit {
       filtered = filtered.filter(plan => plan.language === this.selectedLanguage);
     }
 
+    // Service type filter
+    if (this.selectedServiceType !== 'all') {
+      filtered = filtered.filter(plan => plan.service_type === this.selectedServiceType);
+    }
+
+    // Tier filter
+    if (this.selectedTier !== 'all') {
+      filtered = filtered.filter(plan => plan.tier === this.selectedTier);
+    }
+
     // Search filter
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
@@ -144,8 +194,21 @@ export class PricingComponent implements OnInit {
       );
     }
 
-    // Sort by order
-    filtered.sort((a, b) => (a.order || 0) - (b.order || 0));
+    // Sort by service_type, tier, and order
+    filtered.sort((a, b) => {
+      // First by service type
+      const serviceOrder = { website: 1, app: 2, both: 3 };
+      const serviceCompare = serviceOrder[a.service_type] - serviceOrder[b.service_type];
+      if (serviceCompare !== 0) return serviceCompare;
+
+      // Then by tier
+      const tierOrder = { basic: 1, professional: 2, enterprise: 3 };
+      const tierCompare = tierOrder[a.tier] - tierOrder[b.tier];
+      if (tierCompare !== 0) return tierCompare;
+
+      // Finally by order
+      return (a.order || 0) - (b.order || 0);
+    });
 
     this.filteredPlans = filtered;
   }
@@ -154,6 +217,23 @@ export class PricingComponent implements OnInit {
     const monthlyTotal = plan.price_monthly * 12;
     const savings = monthlyTotal - plan.price_yearly;
     return Math.max(0, Math.round(savings * 100) / 100);
+  }
+
+  calculateSavingsPercentage(plan: PricingPlan): number {
+    const monthlyTotal = plan.price_monthly * 12;
+    if (monthlyTotal === 0) return 0;
+    const savings = monthlyTotal - plan.price_yearly;
+    return Math.round((savings / monthlyTotal) * 100);
+  }
+
+  getServiceCategoryName(type: ServiceType): string {
+    const category = this.serviceCategories.find(c => c.id === type);
+    return category ? category.name : type;
+  }
+
+  getTierName(tier: PlanTier): string {
+    const tierObj = this.planTiers.find(t => t.id === tier);
+    return tierObj ? tierObj.name : tier;
   }
 
   openAddModal() {
@@ -173,6 +253,8 @@ export class PricingComponent implements OnInit {
   resetForm() {
     this.planForm.reset({
       language: 'en',
+      service_type: 'website',
+      tier: 'basic',
       name: '',
       description: '',
       price_monthly: 0,
@@ -182,16 +264,20 @@ export class PricingComponent implements OnInit {
       order: 0
     });
 
-    // Clear features array and add one empty field
+    // Clear features array and add default fields
     while (this.features.length > 0) {
       this.features.removeAt(0);
     }
+    this.addFeature();
+    this.addFeature();
     this.addFeature();
   }
 
   populateForm(plan: PricingPlan) {
     this.planForm.patchValue({
       language: plan.language,
+      service_type: plan.service_type,
+      tier: plan.tier,
       name: plan.name,
       description: plan.description,
       price_monthly: plan.price_monthly,
@@ -208,9 +294,11 @@ export class PricingComponent implements OnInit {
     
     if (plan.features && plan.features.length > 0) {
       plan.features.forEach(feature => {
-        this.features.push(this.fb.control(feature));
+        this.features.push(this.fb.control(feature, Validators.required));
       });
     } else {
+      this.addFeature();
+      this.addFeature();
       this.addFeature();
     }
   }
@@ -220,6 +308,8 @@ export class PricingComponent implements OnInit {
       Object.keys(this.planForm.controls).forEach(key => {
         this.planForm.get(key)?.markAsTouched();
       });
+      this.features.controls.forEach(control => control.markAsTouched());
+      alert('Please fill in all required fields');
       return;
     }
 
@@ -227,7 +317,13 @@ export class PricingComponent implements OnInit {
     const formValue = this.planForm.value;
     
     // Filter out empty features
-    formValue.features = formValue.features.filter((f: string) => f.trim() !== '');
+    formValue.features = formValue.features.filter((f: string) => f && f.trim() !== '');
+
+    if (formValue.features.length === 0) {
+      alert('Please add at least one feature');
+      this.saving = false;
+      return;
+    }
 
     // Generate slug from name
     formValue.slug = formValue.name.toLowerCase()
@@ -243,13 +339,12 @@ export class PricingComponent implements OnInit {
         this.saving = false;
         this.closeModal();
         this.loadPlans();
-        // Show success message
         alert(this.isEditMode ? 'Pricing plan updated successfully!' : 'Pricing plan created successfully!');
       },
       error: (error) => {
         console.error('Error saving pricing plan:', error);
         this.saving = false;
-        alert('Error saving pricing plan. Please try again.');
+        alert('Error saving pricing plan: ' + (error.error?.message || 'Please try again'));
       }
     });
   }
@@ -271,10 +366,24 @@ export class PricingComponent implements OnInit {
     });
   }
 
+  duplicatePlan(plan: PricingPlan) {
+    const newPlan = {
+      ...plan,
+      id: undefined,
+      name: plan.name + ' (Copy)',
+      slug: undefined
+    };
+    
+    this.currentPlan = null;
+    this.isEditMode = false;
+    this.populateForm(newPlan);
+    this.showModal = true;
+  }
+
   deletePlan(plan: PricingPlan) {
     if (!plan.id) return;
 
-    if (!confirm('Are you sure you want to delete this pricing plan?')) {
+    if (!confirm(`Are you sure you want to delete "${plan.name}"?`)) {
       return;
     }
 
@@ -293,5 +402,15 @@ export class PricingComponent implements OnInit {
   closeModal() {
     this.showModal = false;
     this.resetForm();
+  }
+
+  // Helper to get plan count by category
+  getPlanCountByCategory(type: ServiceType): number {
+    return this.plans.filter(p => p.service_type === type).length;
+  }
+
+  // Helper to get plan count by tier
+  getPlanCountByTier(tier: PlanTier): number {
+    return this.plans.filter(p => p.tier === tier).length;
   }
 }

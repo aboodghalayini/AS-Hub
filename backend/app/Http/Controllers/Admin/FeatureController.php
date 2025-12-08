@@ -11,10 +11,16 @@ class FeatureController extends Controller
 {
     public function index(Request $request)
     {
-        $language = $request->input('language', 'en');
-        $perPage = $request->input('per_page', 15);
+        $language = $request->input('language');
 
-        $features = Feature::language($language)->ordered()->paginate($perPage);
+        $query = Feature::query()->ordered();
+
+        // Apply language filter only if specified
+        if ($language && $language !== 'all') {
+            $query->language($language);
+        }
+
+        $features = $query->get();
 
         return response()->json(['success' => true, 'data' => $features]);
     }

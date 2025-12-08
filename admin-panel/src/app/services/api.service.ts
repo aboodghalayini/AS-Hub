@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, timeout, retry, catchError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { timeout, retry, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface ApiError {

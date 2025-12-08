@@ -408,6 +408,39 @@
             </div>
           </div>
 
+          <!-- Quick Template Toggle -->
+          <div class="template-toggle-section" *ngIf="!isEditMode">
+            <div class="toggle-card" [class.active]="useTemplate">
+              <div class="toggle-header">
+                <div class="toggle-icon">
+                  <i class="bi bi-magic"></i>
+                </div>
+                <div class="toggle-content">
+                  <h4>Use Smart Template</h4>
+                  <p>Auto-fill with pre-configured values based on service type and tier</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" [(ngModel)]="useTemplate" [ngModelOptions]="{standalone: true}" (change)="toggleTemplateMode()">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="template-benefits" *ngIf="useTemplate">
+                <div class="benefit-item">
+                  <i class="bi bi-check-circle-fill"></i>
+                  <span>Pre-filled pricing suggestions</span>
+                </div>
+                <div class="benefit-item">
+                  <i class="bi bi-check-circle-fill"></i>
+                  <span>Industry-standard features</span>
+                </div>
+                <div class="benefit-item">
+                  <i class="bi bi-check-circle-fill"></i>
+                  <span>Bilingual content (EN/AR)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Language & Service Type -->
           <div class="form-section">
             <h3 class="section-title">
@@ -417,7 +450,7 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Language <span class="required">*</span></label>
-                <select formControlName="language" class="form-control">
+                <select formControlName="language" class="form-control" (change)="onLanguageChange()">
                   <option value="en">🇬🇧 English</option>
                   <option value="ar">🇸🇦 العربية (Arabic)</option>
                 </select>
@@ -425,7 +458,7 @@
 
               <div class="form-group">
                 <label>Service Type <span class="required">*</span></label>
-                <select formControlName="service_type" class="form-control">
+                <select formControlName="service_type" class="form-control" (change)="onServiceTypeChange()">
                   <option value="website">🌐 Website Development</option>
                   <option value="app">📱 Mobile App Development</option>
                   <option value="both">🚀 Website + App Package</option>
@@ -437,7 +470,7 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Plan Tier <span class="required">*</span></label>
-                <select formControlName="tier" class="form-control">
+                <select formControlName="tier" class="form-control" (change)="onTierChange()">
                   <option value="basic">⭐ Basic</option>
                   <option value="professional">⭐⭐ Professional</option>
                   <option value="enterprise">⭐⭐⭐ Enterprise</option>

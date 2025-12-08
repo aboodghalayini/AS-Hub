@@ -14,7 +14,8 @@
     "faq": "FAQ",
     "leads": "Leads",
     "media": "Media",
-    "settings": "Settings"
+    "settings": "Settings",
+    "profile": "Profile"
   },
   
   "app": {
@@ -43,29 +44,49 @@
     "faq": "FAQ",
     "leads": "Leads",
     "settings": "Settings",
-    "media": "Media"
+    "media": "Media",
+    "profile": "Profile"
   },
   
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome back",
+    "subtitle": "Here's what's happening with your platform today",
     "totalLeads": "Total Leads",
     "newLeads": "New Leads",
     "processedLeads": "Processed Leads",
-    "totalServices": "Active Services",
+    "activeServices": "Active Services",
     "testimonials": "Testimonials",
     "recentLeads": "Recent Leads",
+    "latestInquiries": "Latest customer inquiries",
     "quickStats": "Quick Statistics",
+    "quickActions": "Quick Actions",
     "recentActivity": "Recent Activity",
     "viewAll": "View All",
     "noLeads": "No leads yet",
+    "noLeadsDesc": "Customer inquiries will appear here",
     "noActivity": "No recent activity",
     "thisMonth": "this month",
+    "allTime": "All time",
     "unread": "Unread",
+    "new": "New",
+    "published": "Published",
+    "reviews": "Reviews",
     "totalPricingPlans": "Pricing Plans",
+    "pricingPlans": "Pricing",
     "totalFeatures": "Features",
+    "features": "Features",
     "totalFAQ": "FAQ Items",
-    "totalMedia": "Media Files"
+    "faq": "FAQ",
+    "totalMedia": "Media Files",
+    "media": "Media",
+    "manageServices": "Services",
+    "platform": "Platform",
+    "lastUpdate": "Last Update",
+    "status": "Status",
+    "operational": "Operational",
+    "security": "Security",
+    "secured": "Secured"
   },
   
   "services": {
@@ -216,6 +237,35 @@
     "uploadDate": "Upload Date",
     "altText": "Alt Text",
     "mediaTitle": "Title"
+  },
+  
+  "profile": {
+    "title": "Profile Settings",
+    "subtitle": "Manage your account information and security",
+    "updateProfile": "Update Profile Information",
+    "changePassword": "Change Password",
+    "name": "Full Name",
+    "namePlaceholder": "Enter your full name",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "avatar": "Avatar URL",
+    "avatarPlaceholder": "https://example.com/avatar.jpg",
+    "avatarHint": "Enter a URL to your profile picture",
+    "optional": "Optional",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter your current password",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPassword": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "passwordHint": "Password must be at least 8 characters",
+    "saveProfile": "Save Profile",
+    "updatePassword": "Update Password",
+    "securityTips": "Security Tips",
+    "tip1": "Use a strong password with at least 8 characters",
+    "tip2": "Never share your password with anyone",
+    "tip3": "Change your password regularly",
+    "tip4": "Use different passwords for different accounts"
   },
   
   "common": {

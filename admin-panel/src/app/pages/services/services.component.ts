@@ -35,6 +35,9 @@ export class ServicesComponent implements OnInit {
   
   serviceForm!: FormGroup;
   currentService: Service | null = null;
+  selectedFile: File | null = null;
+  imagePreview: string | null = null;
+  useEmoji: boolean = true;
 
   constructor(
     private apiService: ApiService,
@@ -161,14 +164,28 @@ export class ServicesComponent implements OnInit {
   }
 
   populateForm(service: Service) {
+    // Check if icon is an image or emoji
+    const isImage = service.icon && (service.icon.startsWith('/uploads/') || service.icon.startsWith('http'));
+    
     this.serviceForm.patchValue({
       language: service.language,
       title: service.title,
-      icon: service.icon,
+      icon: isImage ? '🛠️' : service.icon,
       description: service.description,
       order: service.order,
       is_active: service.is_active
     });
+
+    // Set icon type and preview
+    if (isImage) {
+      this.useEmoji = false;
+      this.imagePreview = this.getIconUrl(service.icon);
+      this.selectedFile = null; // We don't have the actual file, just the URL
+    } else {
+      this.useEmoji = true;
+      this.imagePreview = null;
+      this.selectedFile = null;
+    }
 
     // Populate features
     while (this.features.length > 0) {
@@ -181,6 +198,35 @@ export class ServicesComponent implements OnInit {
       });
     } else {
       this.addFeature();
+    }
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      this.useEmoji = false;
+      
+      // Create image preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeImage() {
+    this.selectedFile = null;
+    this.imagePreview = null;
+    this.useEmoji = true;
+  }
+
+  toggleIconType() {
+    this.useEmoji = !this.useEmoji;
+    if (this.useEmoji) {
+      this.selectedFile = null;
+      this.imagePreview = null;
     }
   }
 
@@ -198,26 +244,44 @@ export class ServicesComponent implements OnInit {
     // Filter out empty features
     formValue.features = formValue.features.filter((f: string) => f.trim() !== '');
 
-    // Generate slug from title
-    formValue.slug = formValue.title.toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-');
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('language', formValue.language);
+    formData.append('title', formValue.title);
+    formData.append('description', formValue.description || '');
+    formData.append('order', formValue.order.toString());
+    formData.append('is_active', formValue.is_active ? '1' : '0');
+    
+    // Add features as JSON string
+    formData.append('features', JSON.stringify(formValue.features));
+    
+    // Add icon (emoji or file)
+    if (this.selectedFile) {
+      formData.append('icon_file', this.selectedFile);
+    } else {
+      formData.append('icon', formValue.icon || '🛠️');
+    }
+
+    // For edit mode, add _method field for Laravel
+    if (this.isEditMode && this.currentService) {
+      formData.append('_method', 'PUT');
+    }
 
     const request = this.isEditMode && this.currentService
-      ? this.apiService.put(`/admin/services/${this.currentService.id}`, formValue)
-      : this.apiService.post('/admin/services', formValue);
+      ? this.apiService.post(`/admin/services/${this.currentService.id}`, formData)
+      : this.apiService.post('/admin/services', formData);
 
     request.subscribe({
-      next: () => {
+      next: (response: any) => {
         this.saving = false;
         this.closeModal();
         this.loadServices();
-        alert(this.isEditMode ? 'Service updated successfully!' : 'Service created successfully!');
+        this.showSuccessMessage(this.isEditMode ? 'Service updated successfully!' : 'Service created successfully!');
       },
       error: (error) => {
         console.error('Error saving service:', error);
         this.saving = false;
-        alert('Error saving service. Please try again.');
+        this.showErrorMessage('Error saving service. Please try again.');
       }
     });
   }
@@ -225,18 +289,26 @@ export class ServicesComponent implements OnInit {
   toggleStatus(service: Service) {
     if (!service.id) return;
 
-    const updatedService = { ...service, is_active: !service.is_active };
-    
-    this.apiService.put(`/admin/services/${service.id}`, updatedService).subscribe({
-      next: () => {
+    this.apiService.post(`/admin/services/${service.id}/toggle`, {}).subscribe({
+      next: (response: any) => {
         service.is_active = !service.is_active;
-        alert('Status updated successfully!');
+        this.showSuccessMessage('Status updated successfully!');
       },
       error: (error) => {
         console.error('Error updating status:', error);
-        alert('Error updating status. Please try again.');
+        this.showErrorMessage('Error updating status. Please try again.');
       }
     });
+  }
+
+  showSuccessMessage(message: string) {
+    // You can replace this with a toast notification library
+    alert(message);
+  }
+
+  showErrorMessage(message: string) {
+    // You can replace this with a toast notification library
+    alert(message);
   }
 
   deleteService(service: Service) {
@@ -261,5 +333,22 @@ export class ServicesComponent implements OnInit {
   closeModal() {
     this.showModal = false;
     this.resetForm();
+    this.selectedFile = null;
+    this.imagePreview = null;
+    this.useEmoji = true;
+  }
+
+  getIconDisplay(service: Service): string {
+    if (service.icon && (service.icon.startsWith('/uploads/') || service.icon.startsWith('http'))) {
+      return 'image';
+    }
+    return 'emoji';
+  }
+
+  getIconUrl(icon: string): string {
+    if (icon.startsWith('http')) {
+      return icon;
+    }
+    return `http://localhost:8000${icon}`;
   }
 }

@@ -6,7 +6,7 @@
     <!-- Logo -->
     <div class="sidebar-header">
       <div class="logo">
-        <span class="logo-icon">🚀</span>
+        <img src="assets/images/logo.png" alt="AS Hub Logo" class="logo-icon">
         <span class="logo-text" *ngIf="isSidebarOpen">AS Hub</span>
       </div>
     </div>
@@ -71,10 +71,10 @@
 
         <!-- Admin Profile -->
         <div class="admin-profile">
-          <div class="profile-info">
-            <span class="profile-avatar">👤</span>
-            <span class="profile-name">{{ adminName }}</span>
-          </div>
+          <button class="profile-btn" routerLink="/profile" [title]="'menu.profile' | translate">
+            <span class="profile-icon">👤</span>
+            <span class="profile-text">Admin</span>
+          </button>
           <button class="logout-btn" (click)="logout()" [title]="'logout' | translate">
             <span class="logout-icon">🚪</span>
             <span class="logout-text">{{ 'logout' | translate }}</span>

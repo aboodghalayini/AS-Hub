@@ -18,17 +18,34 @@ class ServiceController extends Controller
      */
     public function index(Request $request)
     {
-        $language = $request->input('language', 'en');
-        $perPage = $request->input('per_page', 15);
+        try {
+            $language = $request->input('language');
+            $perPage = $request->input('per_page', 100);
 
-        $services = Service::language($language)
-            ->ordered()
-            ->paginate($perPage);
+            $query = Service::query();
 
-        return response()->json([
-            'success' => true,
-            'data' => $services
-        ]);
+            // Filter by language if provided
+            if ($language && $language !== 'all') {
+                $query->where('language', $language);
+            }
+
+            // Order by order field
+            $query->orderBy('order', 'asc')->orderBy('id', 'desc');
+
+            $services = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $services
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load services',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
     }
 
     /**
@@ -39,35 +56,52 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'language' => 'required|in:en,ar',
-            'title' => 'required|string|max:255',
-            'icon' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'features' => 'nullable|array',
-            'features.*' => 'string',
-            'order' => 'nullable|integer',
-            'is_active' => 'nullable|boolean',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
+            // Convert features from JSON string to array if needed
+            $data = $request->all();
+            if (isset($data['features']) && is_string($data['features'])) {
+                $data['features'] = json_decode($data['features'], true);
+            }
+
+            $validator = Validator::make($data, [
+                'language' => 'required|in:en,ar',
+                'title' => 'required|string|max:255',
+                'icon' => 'nullable|string|max:255',
+                'icon_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'description' => 'nullable|string',
+                'features' => 'nullable|array',
+                'features.*' => 'string',
+                'order' => 'nullable|integer',
+                'is_active' => 'nullable',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $iconPath = $request->icon ?? '🛠️';
+
+            // Handle file upload
+            if ($request->hasFile('icon_file')) {
+                $file = $request->file('icon_file');
+                $filename = time() . '_' . Str::slug($request->title) . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/services'), $filename);
+                $iconPath = '/uploads/services/' . $filename;
+            }
+
             $service = Service::create([
-                'language' => $request->language,
-                'title' => $request->title,
-                'slug' => Str::slug($request->title),
-                'icon' => $request->icon,
-                'description' => $request->description,
-                'features' => $request->features,
-                'order' => $request->order ?? 0,
-                'is_active' => $request->is_active ?? true,
+                'language' => $data['language'],
+                'title' => $data['title'],
+                'slug' => Str::slug($data['title']),
+                'icon' => $iconPath,
+                'description' => $data['description'] ?? '',
+                'features' => $data['features'] ?? [],
+                'order' => $data['order'] ?? 0,
+                'is_active' => filter_var($data['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
             ]);
 
             return response()->json([
@@ -126,33 +160,57 @@ class ServiceController extends Controller
             ], 404);
         }
 
-        $validator = Validator::make($request->all(), [
-            'language' => 'sometimes|in:en,ar',
-            'title' => 'sometimes|string|max:255',
-            'icon' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'features' => 'nullable|array',
-            'features.*' => 'string',
-            'order' => 'nullable|integer',
-            'is_active' => 'nullable|boolean',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
-            $updateData = $request->only([
-                'language', 'title', 'icon', 'description', 
-                'features', 'order', 'is_active'
+            // Convert features from JSON string to array if needed
+            $data = $request->all();
+            if (isset($data['features']) && is_string($data['features'])) {
+                $data['features'] = json_decode($data['features'], true);
+            }
+
+            $validator = Validator::make($data, [
+                'language' => 'sometimes|in:en,ar',
+                'title' => 'sometimes|string|max:255',
+                'icon' => 'nullable|string|max:255',
+                'icon_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'description' => 'nullable|string',
+                'features' => 'nullable|array',
+                'features.*' => 'string',
+                'order' => 'nullable|integer',
+                'is_active' => 'nullable',
             ]);
 
-            if (isset($updateData['title'])) {
-                $updateData['slug'] = Str::slug($updateData['title']);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $updateData = [];
+
+            if (isset($data['language'])) $updateData['language'] = $data['language'];
+            if (isset($data['title'])) {
+                $updateData['title'] = $data['title'];
+                $updateData['slug'] = Str::slug($data['title']);
+            }
+            if (isset($data['icon'])) $updateData['icon'] = $data['icon'];
+            if (isset($data['description'])) $updateData['description'] = $data['description'];
+            if (isset($data['features'])) $updateData['features'] = $data['features'];
+            if (isset($data['order'])) $updateData['order'] = $data['order'];
+            if (isset($data['is_active'])) $updateData['is_active'] = filter_var($data['is_active'], FILTER_VALIDATE_BOOLEAN);
+
+            // Handle file upload
+            if ($request->hasFile('icon_file')) {
+                // Delete old file if exists
+                if ($service->icon && file_exists(public_path($service->icon))) {
+                    @unlink(public_path($service->icon));
+                }
+
+                $file = $request->file('icon_file');
+                $filename = time() . '_' . Str::slug($data['title'] ?? $service->title) . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/services'), $filename);
+                $updateData['icon'] = '/uploads/services/' . $filename;
             }
 
             $service->update($updateData);

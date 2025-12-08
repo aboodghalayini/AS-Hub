@@ -49,6 +49,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/media/media.component').then(m => m.MediaComponent)
       },
       {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

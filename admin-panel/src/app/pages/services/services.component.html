@@ -58,7 +58,13 @@
     <div class="service-card" *ngFor="let service of filteredServices">
       <!-- Card Header -->
       <div class="card-header">
-        <div class="service-icon">{{ service.icon || '🛠️' }}</div>
+        <div class="service-icon" *ngIf="getIconDisplay(service) === 'emoji'">
+          {{ service.icon || '🛠️' }}
+        </div>
+        <img *ngIf="getIconDisplay(service) === 'image'" 
+             [src]="getIconUrl(service.icon)" 
+             [alt]="service.title"
+             class="service-icon-img">
         <div class="language-badge" [class]="service.language">
           {{ service.language === 'en' ? '🇬🇧' : '🇸🇦' }}
         </div>
@@ -148,12 +154,54 @@
           </div>
         </div>
 
-        <!-- Icon -->
+        <!-- Icon Type Toggle -->
         <div class="form-group">
           <label>{{ 'services.icon' | translate }}</label>
+          <div class="icon-type-toggle">
+            <button type="button" 
+                    class="btn btn-sm" 
+                    [class.active]="useEmoji"
+                    (click)="toggleIconType()">
+              😀 Emoji
+            </button>
+            <button type="button" 
+                    class="btn btn-sm" 
+                    [class.active]="!useEmoji"
+                    (click)="toggleIconType()">
+              🖼️ Image
+            </button>
+          </div>
+        </div>
+
+        <!-- Emoji Input -->
+        <div class="form-group" *ngIf="useEmoji">
           <input type="text" formControlName="icon" class="form-control" 
                  placeholder="🌐">
           <small class="form-hint">{{ 'services.iconHint' | translate }}</small>
+        </div>
+
+        <!-- Image Upload -->
+        <div class="form-group" *ngIf="!useEmoji">
+          <div class="image-upload-area">
+            <div class="upload-box" *ngIf="!imagePreview">
+              <input type="file" 
+                     id="iconFile" 
+                     accept="image/*"
+                     (change)="onFileSelected($event)"
+                     style="display: none;">
+              <label for="iconFile" class="upload-label">
+                <span class="upload-icon">📁</span>
+                <span class="upload-text">Click to upload image</span>
+                <span class="upload-hint">PNG, JPG, GIF, SVG (Max 2MB)</span>
+              </label>
+            </div>
+            <div class="image-preview" *ngIf="imagePreview">
+              <img [src]="imagePreview" alt="Preview">
+              <button type="button" class="btn-remove-image" (click)="removeImage()">
+                ✕
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Description -->

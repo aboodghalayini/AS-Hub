@@ -70,6 +70,12 @@ export class LayoutComponent implements OnInit {
       label: 'settings', 
       route: '/settings',
       badge: null
+    },
+    { 
+      icon: '👤', 
+      label: 'profile', 
+      route: '/profile',
+      badge: null
     }
   ];
 

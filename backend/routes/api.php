@@ -45,6 +45,11 @@ Route::prefix('auth')->group(function () {
 // Admin Routes (Protected by JWT)
 Route::prefix('admin')->middleware('auth:api')->group(function () {
     
+    // Profile Management
+    Route::get('profile', [\App\Http\Controllers\Admin\ProfileController::class, 'show']);
+    Route::put('profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update']);
+    Route::put('password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword']);
+    
     // Services Management
     Route::apiResource('services', ServiceController::class);
     Route::post('services/{id}/toggle', [ServiceController::class, 'toggle']);

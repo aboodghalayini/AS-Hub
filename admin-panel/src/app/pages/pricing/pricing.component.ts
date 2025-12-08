@@ -84,12 +84,29 @@ export class PricingComponent implements OnInit {
     this.loading = true;
     this.apiService.get('/admin/pricing').subscribe({
       next: (response: any) => {
-        this.plans = response.data || response || [];
+        console.log('Pricing API Response:', response);
+        
+        // Handle different response formats
+        if (response.data) {
+          // If data is paginated
+          if (response.data.data) {
+            this.plans = response.data.data;
+          } else {
+            this.plans = response.data;
+          }
+        } else if (Array.isArray(response)) {
+          this.plans = response;
+        } else {
+          this.plans = [];
+        }
+        
+        console.log('Loaded plans:', this.plans);
         this.applyFilters();
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading pricing plans:', error);
+        alert('Error loading pricing plans: ' + (error.error?.message || error.message || 'Unknown error'));
         this.plans = [];
         this.filteredPlans = [];
         this.loading = false;

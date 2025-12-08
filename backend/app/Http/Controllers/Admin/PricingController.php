@@ -18,12 +18,17 @@ class PricingController extends Controller
      */
     public function index(Request $request)
     {
-        $language = $request->input('language', 'en');
-        $perPage = $request->input('per_page', 15);
+        $language = $request->input('language');
+        $perPage = $request->input('per_page', 100);
 
-        $plans = PricingPlan::language($language)
-            ->ordered()
-            ->paginate($perPage);
+        $query = PricingPlan::query();
+        
+        // Filter by language if specified
+        if ($language && $language !== 'all') {
+            $query->where('language', $language);
+        }
+        
+        $plans = $query->ordered()->get();
 
         return response()->json([
             'success' => true,

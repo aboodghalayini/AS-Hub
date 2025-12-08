@@ -413,4 +413,90 @@ export class PricingComponent implements OnInit {
   getPlanCountByTier(tier: PlanTier): number {
     return this.plans.filter(p => p.tier === tier).length;
   }
+
+  // Clear search term
+  clearSearch() {
+    this.searchTerm = '';
+    this.applyFilters();
+  }
+
+  // Clear all filters
+  clearAllFilters() {
+    this.searchTerm = '';
+    this.selectedLanguage = 'all';
+    this.selectedServiceType = 'all';
+    this.selectedTier = 'all';
+    this.applyFilters();
+  }
+
+  // Get plans count by language
+  getPlansByLanguage(language: string): number {
+    return this.plans.filter(p => p.language === language).length;
+  }
+
+  // Deactivate all plans
+  deactivateAll() {
+    if (!confirm('Are you sure you want to deactivate all pricing plans?')) {
+      return;
+    }
+
+    this.loading = true;
+    const updatePromises = this.plans
+      .filter(p => p.is_active && p.id)
+      .map(p => this.apiService.put(`/admin/pricing/${p.id}`, { ...p, is_active: false }).toPromise());
+
+    Promise.all(updatePromises).then(() => {
+      this.loading = false;
+      this.loadPlans();
+      alert('All plans deactivated successfully!');
+    }).catch(error => {
+      console.error('Error deactivating plans:', error);
+      this.loading = false;
+      alert('Error deactivating plans. Please try again.');
+    });
+  }
+
+  // Activate all plans
+  activateAll() {
+    if (!confirm('Are you sure you want to activate all pricing plans?')) {
+      return;
+    }
+
+    this.loading = true;
+    const updatePromises = this.plans
+      .filter(p => !p.is_active && p.id)
+      .map(p => this.apiService.put(`/admin/pricing/${p.id}`, { ...p, is_active: true }).toPromise());
+
+    Promise.all(updatePromises).then(() => {
+      this.loading = false;
+      this.loadPlans();
+      alert('All plans activated successfully!');
+    }).catch(error => {
+      console.error('Error activating plans:', error);
+      this.loading = false;
+      alert('Error activating plans. Please try again.');
+    });
+  }
+
+  // Export plans to JSON
+  exportPlans() {
+    const dataStr = JSON.stringify(this.plans, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `pricing-plans-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Get active plans by category
+  getActivePlansByCategory(type: ServiceType): number {
+    return this.plans.filter(p => p.service_type === type && p.is_active).length;
+  }
+
+  // Get popular plans count
+  getPopularPlansCount(): number {
+    return this.plans.filter(p => p.is_popular).length;
+  }
 }

@@ -32,8 +32,8 @@ export class ApiService {
     }
     return this.http.get<T>(`${this.apiUrl}${endpoint}`, { params: httpParams })
       .pipe(
-        timeout(this.timeout),
-        retry(this.maxRetries),
+        timeout<T>(this.timeout),
+        retry<T>(this.maxRetries),
         catchError(this.handleError)
       );
   }
@@ -41,7 +41,7 @@ export class ApiService {
   post<T>(endpoint: string, data: any): Observable<T> {
     return this.http.post<T>(`${this.apiUrl}${endpoint}`, data)
       .pipe(
-        timeout(this.timeout),
+        timeout<T>(this.timeout),
         catchError(this.handleError)
       );
   }
@@ -49,7 +49,7 @@ export class ApiService {
   put<T>(endpoint: string, data: any): Observable<T> {
     return this.http.put<T>(`${this.apiUrl}${endpoint}`, data)
       .pipe(
-        timeout(this.timeout),
+        timeout<T>(this.timeout),
         catchError(this.handleError)
       );
   }
@@ -57,7 +57,7 @@ export class ApiService {
   delete<T>(endpoint: string): Observable<T> {
     return this.http.delete<T>(`${this.apiUrl}${endpoint}`)
       .pipe(
-        timeout(this.timeout),
+        timeout<T>(this.timeout),
         catchError(this.handleError)
       );
   }
@@ -167,7 +167,7 @@ export class ApiService {
   exportLeads(): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/admin/leads/export`, { responseType: 'blob' })
       .pipe(
-        timeout(this.timeout),
+        timeout<Blob>(this.timeout),
         catchError(this.handleError)
       );
   }

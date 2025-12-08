@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, tap, catchError, throwError, timeout } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { tap, catchError, timeout } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 interface LoginResponse {

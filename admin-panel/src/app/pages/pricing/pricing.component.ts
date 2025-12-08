@@ -66,6 +66,240 @@ export class PricingComponent implements OnInit {
     { id: 'enterprise', name: 'Enterprise', nameAr: 'مؤسسي' }
   ];
 
+  // Pre-defined templates for quick plan creation
+  planTemplates = {
+    website: {
+      basic: {
+        name: 'Basic Website',
+        nameAr: 'موقع أساسي',
+        description: 'Perfect for small businesses and personal websites',
+        descriptionAr: 'مثالي للشركات الصغيرة والمواقع الشخصية',
+        price_monthly: 299,
+        price_yearly: 2990,
+        features: [
+          'Up to 5 pages',
+          'Responsive design',
+          'Basic SEO optimization',
+          'Contact form',
+          '1 month support'
+        ],
+        featuresAr: [
+          'حتى 5 صفحات',
+          'تصميم متجاوب',
+          'تحسين SEO أساسي',
+          'نموذج اتصال',
+          'دعم لمدة شهر'
+        ]
+      },
+      professional: {
+        name: 'Professional Website',
+        nameAr: 'موقع احترافي',
+        description: 'Ideal for growing businesses with advanced features',
+        descriptionAr: 'مثالي للشركات النامية مع ميزات متقدمة',
+        price_monthly: 599,
+        price_yearly: 5990,
+        features: [
+          'Up to 15 pages',
+          'Custom design',
+          'Advanced SEO',
+          'Blog integration',
+          'Social media integration',
+          '3 months support'
+        ],
+        featuresAr: [
+          'حتى 15 صفحة',
+          'تصميم مخصص',
+          'SEO متقدم',
+          'تكامل المدونة',
+          'تكامل وسائل التواصل',
+          'دعم لمدة 3 أشهر'
+        ]
+      },
+      enterprise: {
+        name: 'Enterprise Website',
+        nameAr: 'موقع مؤسسي',
+        description: 'Complete solution for large organizations',
+        descriptionAr: 'حل متكامل للمؤسسات الكبيرة',
+        price_monthly: 1299,
+        price_yearly: 12990,
+        features: [
+          'Unlimited pages',
+          'Premium custom design',
+          'Enterprise SEO',
+          'E-commerce integration',
+          'Multi-language support',
+          'Analytics dashboard',
+          '12 months priority support'
+        ],
+        featuresAr: [
+          'صفحات غير محدودة',
+          'تصميم مخصص متميز',
+          'SEO مؤسسي',
+          'تكامل التجارة الإلكترونية',
+          'دعم متعدد اللغات',
+          'لوحة تحليلات',
+          'دعم ذو أولوية لمدة 12 شهر'
+        ]
+      }
+    },
+    app: {
+      basic: {
+        name: 'Basic Mobile App',
+        nameAr: 'تطبيق جوال أساسي',
+        description: 'Simple mobile app for iOS or Android',
+        descriptionAr: 'تطبيق جوال بسيط لنظام iOS أو Android',
+        price_monthly: 499,
+        price_yearly: 4990,
+        features: [
+          'Single platform (iOS or Android)',
+          'Up to 5 screens',
+          'Basic UI/UX design',
+          'Push notifications',
+          '2 months support'
+        ],
+        featuresAr: [
+          'منصة واحدة (iOS أو Android)',
+          'حتى 5 شاشات',
+          'تصميم UI/UX أساسي',
+          'إشعارات فورية',
+          'دعم لمدة شهرين'
+        ]
+      },
+      professional: {
+        name: 'Professional Mobile App',
+        nameAr: 'تطبيق جوال احترافي',
+        description: 'Feature-rich app for both iOS and Android',
+        descriptionAr: 'تطبيق غني بالميزات لنظامي iOS و Android',
+        price_monthly: 999,
+        price_yearly: 9990,
+        features: [
+          'Both iOS and Android',
+          'Up to 15 screens',
+          'Custom UI/UX design',
+          'API integration',
+          'Push notifications',
+          'In-app purchases',
+          '6 months support'
+        ],
+        featuresAr: [
+          'iOS و Android',
+          'حتى 15 شاشة',
+          'تصميم UI/UX مخصص',
+          'تكامل API',
+          'إشعارات فورية',
+          'مشتريات داخل التطبيق',
+          'دعم لمدة 6 أشهر'
+        ]
+      },
+      enterprise: {
+        name: 'Enterprise Mobile App',
+        nameAr: 'تطبيق جوال مؤسسي',
+        description: 'Advanced mobile solution with backend',
+        descriptionAr: 'حل جوال متقدم مع نظام خلفي',
+        price_monthly: 1999,
+        price_yearly: 19990,
+        features: [
+          'iOS, Android & Web',
+          'Unlimited screens',
+          'Premium UI/UX design',
+          'Custom backend',
+          'Real-time features',
+          'Advanced analytics',
+          'App store optimization',
+          '12 months priority support'
+        ],
+        featuresAr: [
+          'iOS و Android والويب',
+          'شاشات غير محدودة',
+          'تصميم UI/UX متميز',
+          'نظام خلفي مخصص',
+          'ميزات فورية',
+          'تحليلات متقدمة',
+          'تحسين متجر التطبيقات',
+          'دعم ذو أولوية لمدة 12 شهر'
+        ]
+      }
+    },
+    both: {
+      basic: {
+        name: 'Basic Package',
+        nameAr: 'باقة أساسية',
+        description: 'Website + Mobile App starter package',
+        descriptionAr: 'باقة بداية موقع + تطبيق جوال',
+        price_monthly: 699,
+        price_yearly: 6990,
+        features: [
+          'Basic website (5 pages)',
+          'Single platform app',
+          'Unified design',
+          'Basic features',
+          '3 months support'
+        ],
+        featuresAr: [
+          'موقع أساسي (5 صفحات)',
+          'تطبيق منصة واحدة',
+          'تصميم موحد',
+          'ميزات أساسية',
+          'دعم لمدة 3 أشهر'
+        ]
+      },
+      professional: {
+        name: 'Professional Package',
+        nameAr: 'باقة احترافية',
+        description: 'Complete website and mobile app solution',
+        descriptionAr: 'حل متكامل للموقع والتطبيق الجوال',
+        price_monthly: 1299,
+        price_yearly: 12990,
+        features: [
+          'Professional website',
+          'iOS & Android apps',
+          'Unified backend',
+          'Advanced features',
+          'API integration',
+          '6 months support'
+        ],
+        featuresAr: [
+          'موقع احترافي',
+          'تطبيقات iOS و Android',
+          'نظام خلفي موحد',
+          'ميزات متقدمة',
+          'تكامل API',
+          'دعم لمدة 6 أشهر'
+        ]
+      },
+      enterprise: {
+        name: 'Enterprise Package',
+        nameAr: 'باقة مؤسسية',
+        description: 'Full-scale digital transformation solution',
+        descriptionAr: 'حل تحول رقمي كامل',
+        price_monthly: 2499,
+        price_yearly: 24990,
+        features: [
+          'Enterprise website',
+          'iOS, Android & Web apps',
+          'Custom backend system',
+          'All premium features',
+          'Real-time sync',
+          'Advanced analytics',
+          'Dedicated support team',
+          '12 months priority support'
+        ],
+        featuresAr: [
+          'موقع مؤسسي',
+          'تطبيقات iOS و Android والويب',
+          'نظام خلفي مخصص',
+          'جميع الميزات المتميزة',
+          'مزامنة فورية',
+          'تحليلات متقدمة',
+          'فريق دعم مخصص',
+          'دعم ذو أولوية لمدة 12 شهر'
+        ]
+      }
+    }
+  };
+
+  useTemplate = false;
+
   constructor(
     private apiService: ApiService,
     private fb: FormBuilder
@@ -239,8 +473,69 @@ export class PricingComponent implements OnInit {
   openAddModal() {
     this.isEditMode = false;
     this.currentPlan = null;
+    this.useTemplate = false;
     this.resetForm();
     this.showModal = true;
+  }
+
+  // Apply template based on service type and tier
+  applyTemplate() {
+    const serviceType = this.planForm.get('service_type')?.value as ServiceType;
+    const tier = this.planForm.get('tier')?.value as PlanTier;
+    const language = this.planForm.get('language')?.value;
+
+    if (!serviceType || !tier) return;
+
+    const template = this.planTemplates[serviceType]?.[tier];
+    if (!template) return;
+
+    // Apply template values based on language
+    const isArabic = language === 'ar';
+    
+    this.planForm.patchValue({
+      name: isArabic ? template.nameAr : template.name,
+      description: isArabic ? template.descriptionAr : template.description,
+      price_monthly: template.price_monthly,
+      price_yearly: template.price_yearly
+    });
+
+    // Clear and populate features
+    while (this.features.length > 0) {
+      this.features.removeAt(0);
+    }
+
+    const featuresToUse = isArabic ? template.featuresAr : template.features;
+    featuresToUse.forEach(feature => {
+      this.features.push(this.fb.control(feature, Validators.required));
+    });
+
+    this.useTemplate = true;
+  }
+
+  // Watch for changes in service type, tier, or language to suggest template
+  onServiceTypeChange() {
+    if (this.useTemplate || this.isEditMode) {
+      this.applyTemplate();
+    }
+  }
+
+  onTierChange() {
+    if (this.useTemplate || this.isEditMode) {
+      this.applyTemplate();
+    }
+  }
+
+  onLanguageChange() {
+    if (this.useTemplate) {
+      this.applyTemplate();
+    }
+  }
+
+  toggleTemplateMode() {
+    this.useTemplate = !this.useTemplate;
+    if (this.useTemplate) {
+      this.applyTemplate();
+    }
   }
 
   editPlan(plan: PricingPlan) {

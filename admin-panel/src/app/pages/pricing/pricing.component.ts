@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 
 type ServiceType = 'website' | 'app' | 'both';
@@ -302,7 +302,8 @@ export class PricingComponent implements OnInit {
 
   constructor(
     private apiService: ApiService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    public translate: TranslateService
   ) {
     this.initForm();
   }
@@ -604,7 +605,7 @@ export class PricingComponent implements OnInit {
         this.planForm.get(key)?.markAsTouched();
       });
       this.features.controls.forEach(control => control.markAsTouched());
-      alert('Please fill in all required fields');
+      alert(this.translate.instant('pricing.fillRequired'));
       return;
     }
 
@@ -615,7 +616,7 @@ export class PricingComponent implements OnInit {
     formValue.features = formValue.features.filter((f: string) => f && f.trim() !== '');
 
     if (formValue.features.length === 0) {
-      alert('Please add at least one feature');
+      alert(this.translate.instant('pricing.addOneFeature'));
       this.saving = false;
       return;
     }
@@ -634,12 +635,12 @@ export class PricingComponent implements OnInit {
         this.saving = false;
         this.closeModal();
         this.loadPlans();
-        alert(this.isEditMode ? 'Pricing plan updated successfully!' : 'Pricing plan created successfully!');
+        alert(this.translate.instant(this.isEditMode ? 'pricing.updateSuccess' : 'pricing.createSuccess'));
       },
       error: (error) => {
         console.error('Error saving pricing plan:', error);
         this.saving = false;
-        alert('Error saving pricing plan: ' + (error.error?.message || 'Please try again'));
+        alert(this.translate.instant('pricing.createError') + ': ' + (error.error?.message || this.translate.instant('pricing.tryAgain')));
       }
     });
   }
@@ -652,11 +653,11 @@ export class PricingComponent implements OnInit {
     this.apiService.put(`/admin/pricing/${plan.id}`, updatedPlan).subscribe({
       next: () => {
         plan.is_active = !plan.is_active;
-        alert('Status updated successfully!');
+        alert(this.translate.instant('pricing.statusSuccess'));
       },
       error: (error) => {
         console.error('Error updating status:', error);
-        alert('Error updating status. Please try again.');
+        alert(this.translate.instant('pricing.updateError') + '. ' + this.translate.instant('pricing.tryAgain'));
       }
     });
   }
@@ -678,18 +679,18 @@ export class PricingComponent implements OnInit {
   deletePlan(plan: PricingPlan) {
     if (!plan.id) return;
 
-    if (!confirm(`Are you sure you want to delete "${plan.name}"?`)) {
+    if (!confirm(this.translate.instant('pricing.deleteConfirm') + ` "${plan.name}"?`)) {
       return;
     }
 
     this.apiService.delete(`/admin/pricing/${plan.id}`).subscribe({
       next: () => {
         this.loadPlans();
-        alert('Pricing plan deleted successfully!');
+        alert(this.translate.instant('pricing.deleteSuccess'));
       },
       error: (error) => {
         console.error('Error deleting pricing plan:', error);
-        alert('Error deleting pricing plan. Please try again.');
+        alert(this.translate.instant('pricing.deleteError') + '. ' + this.translate.instant('pricing.tryAgain'));
       }
     });
   }
@@ -731,7 +732,7 @@ export class PricingComponent implements OnInit {
 
   // Deactivate all plans
   deactivateAll() {
-    if (!confirm('Are you sure you want to deactivate all pricing plans?')) {
+    if (!confirm(this.translate.instant('pricing.confirmDeactivate'))) {
       return;
     }
 
@@ -743,17 +744,17 @@ export class PricingComponent implements OnInit {
     Promise.all(updatePromises).then(() => {
       this.loading = false;
       this.loadPlans();
-      alert('All plans deactivated successfully!');
+      alert(this.translate.instant('pricing.deactivateSuccess'));
     }).catch(error => {
       console.error('Error deactivating plans:', error);
       this.loading = false;
-      alert('Error deactivating plans. Please try again.');
+      alert(this.translate.instant('pricing.updateError') + '. ' + this.translate.instant('pricing.tryAgain'));
     });
   }
 
   // Activate all plans
   activateAll() {
-    if (!confirm('Are you sure you want to activate all pricing plans?')) {
+    if (!confirm(this.translate.instant('pricing.confirmActivate'))) {
       return;
     }
 
@@ -765,11 +766,11 @@ export class PricingComponent implements OnInit {
     Promise.all(updatePromises).then(() => {
       this.loading = false;
       this.loadPlans();
-      alert('All plans activated successfully!');
+      alert(this.translate.instant('pricing.activateSuccess'));
     }).catch(error => {
       console.error('Error activating plans:', error);
       this.loading = false;
-      alert('Error activating plans. Please try again.');
+      alert(this.translate.instant('pricing.updateError') + '. ' + this.translate.instant('pricing.tryAgain'));
     });
   }
 

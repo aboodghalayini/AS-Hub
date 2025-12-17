@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, tap, catchError, throwError, timeout } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { tap, catchError, timeout } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 interface LoginResponse {
@@ -62,8 +63,8 @@ export class AuthService {
 
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, { email, password })
       .pipe(
-        timeout(this.timeout),
-        tap(response => {
+        timeout<LoginResponse>(this.timeout),
+        tap((response: LoginResponse) => {
           this.setToken(response.access_token);
           if (response.user) {
             this.setUser(response.user);
@@ -100,8 +101,8 @@ export class AuthService {
   refreshToken(): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/refresh`, {})
       .pipe(
-        timeout(this.timeout),
-        tap(response => {
+        timeout<LoginResponse>(this.timeout),
+        tap((response: LoginResponse) => {
           this.setToken(response.access_token);
         }),
         catchError(error => {
@@ -149,7 +150,7 @@ export class AuthService {
 
     this.http.get<User>(`${this.apiUrl}/auth/me`)
       .pipe(
-        timeout(this.timeout),
+        timeout<User>(this.timeout),
         catchError(error => {
           console.error('Failed to load user:', error);
           this.clearSession();
@@ -157,7 +158,7 @@ export class AuthService {
         })
       )
       .subscribe({
-        next: (user) => this.setUser(user),
+        next: (user: User) => this.setUser(user),
         error: () => this.clearSession()
       });
   }
@@ -262,8 +263,8 @@ export class AuthService {
   updateProfile(data: Partial<User>): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/auth/profile`, data)
       .pipe(
-        timeout(this.timeout),
-        tap(user => this.setUser(user)),
+        timeout<User>(this.timeout),
+        tap((user: User) => this.setUser(user)),
         catchError(this.handleError.bind(this))
       );
   }
